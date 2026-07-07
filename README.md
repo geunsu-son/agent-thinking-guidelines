@@ -50,6 +50,8 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 
 ## 빠른 시작
 
+### 명령어로 설치
+
 ```bash
 git clone https://github.com/geunsu-son/agent-thinking-guidelines.git
 
@@ -63,7 +65,73 @@ cp -r <this-repo>/claude/agents <your-project>/.claude/agents
 cp -r <this-repo>/claude/.claude/memory <your-project>/.claude/memory
 ```
 
-지시하는 법(프롬프트 템플릿)은 각 버전의 README 참조. **3-에이전트 루프** 통합 템플릿도 포함되어 있다.
+### AI 채팅으로 설치 (권장)
+
+터미널 명령어 대신, **대상 프로젝트를 연 채팅**에 아래 프롬프트를 붙여넣으면 된다. 에이전트가 repo를 가져와 복사·병합하고, 적용 결과를 보고한다.
+
+**공통 준비**
+- 대상 프로젝트 루트를 Cursor / Claude Code로 연다.
+- 아래 프롬프트의 `<your-project>`는 현재 워크스페이스 루트로 이해하면 된다.
+
+---
+
+**Cursor** — Agent 채팅에 붙여넣기:
+
+```
+이 프로젝트에 Agent Thinking Guidelines를 설치해줘.
+
+소스: https://github.com/geunsu-son/agent-thinking-guidelines
+Cursor 버전만 사용해. `cursor/.cursor/` 아래 내용을 이 프로젝트 루트의 `.cursor/`에 반영해.
+
+작업 순서:
+1. repo를 임시로 clone한 뒤 `cursor/.cursor/` 구조를 확인해
+2. 이미 `.cursor/`가 있으면 덮어쓰지 말고 병합해
+   - `rules/`, `skills/`, `agents/`, `memory/`는 없는 것만 추가
+   - 같은 이름의 rule·skill·agent가 있으면 차이를 요약하고 내 확인 후 처리해
+3. 복사 대상:
+   - rules/ (core-principles, worker-conduct, analysis-protocol, design-protocol)
+   - skills/ (analysis-protocol, design-protocol)
+   - agents/ (orchestrator, reviewer)
+   - memory/ (README 및 예시)
+4. 완료 후 설치 요약을 보고해:
+   - 추가·병합된 파일 목록
+   - Settings → Rules에 4개 rule이 보이는지 확인 방법
+   - 서브에이전트 호출 예: `/reviewer`, `/orchestrator`
+```
+
+---
+
+**Claude Code** — 채팅에 붙여넣기:
+
+```
+이 프로젝트에 Agent Thinking Guidelines를 설치해줘.
+
+소스: https://github.com/geunsu-son/agent-thinking-guidelines
+Claude Code 버전만 사용해. `claude/` 아래 내용을 이 프로젝트에 반영해.
+
+작업 순서:
+1. repo를 임시로 clone한 뒤 `claude/` 구조를 확인해
+2. 파일별 반영:
+   - `CLAUDE.md` → 프로젝트 루트. 이미 있으면 덮어쓰지 말고 핵심 원칙·작업 규율·금지 행동을 병합해
+   - `skills/` → `.claude/skills/` (없는 skill만 추가, 동일 이름은 차이 요약 후 확인)
+   - `agents/` → `.claude/agents/` (orchestrator, reviewer)
+   - `.claude/memory/` → `.claude/memory/` (디렉터리·README)
+3. 개인 전역(`~/.claude/`)에는 설치하지 말고, 이 프로젝트에만 적용해
+4. 완료 후 설치 요약을 보고해:
+   - 추가·병합된 파일 목록
+   - `/memory`, `/agents`로 적용 확인하는 방법
+```
+
+---
+
+**이미 설치했는지 모를 때** — 사용 중인 도구에 맞는 한 줄:
+
+| 도구 | 확인 프롬프트 |
+|---|---|
+| Cursor | `이 프로젝트에 agent-thinking-guidelines(Cursor 버전)가 적용돼 있는지 확인해줘. .cursor/rules, skills, agents, memory를 점검하고 빠진 항목만 설치해.` |
+| Claude Code | `이 프로젝트에 agent-thinking-guidelines(Claude Code 버전)가 적용돼 있는지 확인해줘. CLAUDE.md, .claude/skills, agents, memory를 점검하고 빠진 항목만 설치해.` |
+
+설치 후 작업 지시(프롬프트 템플릿)는 각 버전 README 참조 — [cursor/README.md](cursor/README.md), [claude/README.md](claude/README.md). **3-에이전트 루프** 통합 템플릿도 포함되어 있다.
 
 ## 요구 사항
 
