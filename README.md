@@ -51,7 +51,7 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 ## 빠른 시작
 
 ```bash
-git clone <this-repo>
+git clone https://github.com/geunsu-son/agent-thinking-guidelines.git
 
 # Cursor
 cp -r <this-repo>/cursor/.cursor <your-project>/.cursor
