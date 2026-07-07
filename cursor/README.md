@@ -41,6 +41,8 @@ cursor/
 
 ## 2. 설치
 
+> **AI 채팅으로 설치**: 대상 프로젝트를 연 Agent 채팅에 붙여넣을 Cursor용 프롬프트는 [루트 README — AI 채팅으로 설치](../README.md#ai-채팅으로-설치-권장) 참조.
+
 ```bash
 # 대상 프로젝트 루트에서
 cp -r <이 repo>/cursor/.cursor .cursor
