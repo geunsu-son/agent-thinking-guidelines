@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local overrides (project-specific memory entries stay in target projects, not this template repo)
+# Uncomment if you add personal memory files here during local testing:
+# cursor/.cursor/memory/*.md
+# claude/.claude/memory/*.md
+!cursor/.cursor/memory/README.md
+!claude/.claude/memory/README.md
