@@ -1,6 +1,6 @@
 ---
 description: 데이터 분석, 대량 파일 처리, SQL 쿼리, pandas 작업 시 적용하는 검증 프로토콜
-globs: *.sql,*.ipynb,*.csv,*.parquet
+globs: **/*.{sql,ipynb,csv,tsv,parquet,xlsx,xls,py}
 alwaysApply: false
 ---
 
