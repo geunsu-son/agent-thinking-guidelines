@@ -19,7 +19,8 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 .
 ├── docs/                                  # 원본 지침 (SSOT — 모든 수정은 여기 먼저)
 │   ├── agent-thinking-guidelines.md
-│   └── multi-agent-orchestration.md
+│   ├── multi-agent-orchestration.md
+│   └── agent-system-overview.md           #   구현된 에이전트 동작 흐름 설명
 ├── cursor/                                # Cursor 버전
 │   ├── .cursor/rules/                     #   4개 rule (.mdc)
 │   ├── .cursor/skills/                    #   상황별 프로토콜 (analysis / design)
