@@ -1,6 +1,7 @@
 # 멀티에이전트 오케스트레이션 지침
 > `agent-thinking-guidelines.md`(이하 "기본 지침")의 확장 문서.
 > 모든 에이전트는 기본 지침 1~7장을 공통으로 따르며, 본 문서는 역할별 추가 규칙을 정의한다.
+> 전체 동작 흐름 개요는 [`agent-system-overview.md`](agent-system-overview.md)를 참조한다.
 
 ---
 
