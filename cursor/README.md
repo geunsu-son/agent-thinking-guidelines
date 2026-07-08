@@ -13,13 +13,13 @@ cursor/
 │   ├── rules/
 │   │   ├── core-principles.mdc     # 핵심 사고 원칙 (항상 적용)
 │   │   ├── worker-conduct.mdc      # 작업 수행·제출 규율 (항상 적용)
-│   │   ├── analysis-protocol.mdc   # 데이터 분석 시 자동 적용
-│   │   └── design-protocol.mdc     # 설계 작업 시 자동 적용
+│   │   ├── analysis-protocol.mdc   # 데이터 분석 시 트리거 (전문은 skill, 포인터)
+│   │   └── design-protocol.mdc     # 설계 작업 시 트리거 (전문은 skill, 포인터)
 │   ├── skills/
 │   │   ├── analysis-protocol/      # 분석 Skill (Claude Code와 동일 내용)
 │   │   └── design-protocol/        # 설계 Skill
 │   ├── agents/
-│   │   ├── orchestrator.md         # 루프 관리 서브에이전트 (산출물 작성 금지)
+│   │   ├── orchestrator.md         # 루프 계획 플래너 서브에이전트 (산출물·직접 호출 금지)
 │   │   └── reviewer.md             # 산출물 검증 서브에이전트 (별도 컨텍스트)
 │   └── memory/                     # 세션 간 교훈 축적
 └── README.md
@@ -29,9 +29,9 @@ cursor/
 |---|---|---|
 | core-principles | `alwaysApply: true` | 모호함 처리, 불확실성 표기, 자체 검토, 금지 행동 |
 | worker-conduct | `alwaysApply: true` | 가정 자기신고, 수정 범위 준수, 체크포인트, 진행 보고 검증 |
-| analysis-protocol | description + globs + Skill | 샘플 검증 → 전체 확장, 행 수 추적, 역산 검증 |
-| design-protocol | description + Skill | 구조 먼저 합의, 결정/미결정 구분, 범위 최소화 |
-| orchestrator (서브에이전트) | 명시 호출 | 작업 분해, 상태 추적, reviewer 라우팅, 에스컬레이션 |
+| analysis-protocol | globs 트리거(.mdc) → 전문은 Skill | 샘플 검증 → 전체 확장, 행 수 추적, 역산 검증 |
+| design-protocol | description 트리거(.mdc) → 전문은 Skill | 구조 먼저 합의, 결정/미결정 구분, 범위 최소화 |
+| orchestrator (서브에이전트) | 명시 호출 | 작업 분해·위험등급·라우팅 **계획**을 메인 에이전트에 반환 (실제 라우팅·상태추적은 메인 에이전트) |
 | reviewer (서브에이전트) | description 매칭 / 명시 호출 | 산출물 승인·검증 (작성자와 별도 컨텍스트) |
 | memory/ | 수동 참조 | 프로젝트별 교훈 파일 (한 교훈 = 한 파일) |
 
@@ -42,6 +42,8 @@ cursor/
 ## 2. 설치
 
 > **AI 채팅으로 설치**: 대상 프로젝트를 연 Agent 채팅에 붙여넣을 Cursor용 프롬프트는 [루트 README — AI 채팅으로 설치](../README.md#ai-채팅으로-설치-권장) 참조.
+>
+> **업데이트**: upstream 버전 반영은 [루트 README — 업데이트](../README.md#업데이트-버전-반영) 참조.
 
 ```bash
 # 대상 프로젝트 루트에서
@@ -126,11 +128,11 @@ cp -r <이 repo>/cursor/.cursor .cursor
 [작업] @src/ 의 구 API 호출을 신규 API로 마이그레이션
 [제약] 테스트 파일 제외, 되돌리기 어려운 DB 변경 없음
 
-/orchestrator 이 작업을 분해하고 위험 등급(하/중/상)을 매겨줘.
-분해안을 내가 승인한 뒤 Worker로 진행하고, 각 단계 산출물은 reviewer로 검증해.
+/orchestrator 이 작업의 분해·위험 등급(하/중/상)·라우팅 계획을 만들어줘.
+그 계획을 내가 승인하면, 메인 에이전트가 계획대로 Worker를 진행시키고 각 단계 산출물은 reviewer로 검증해.
 반려는 최대 3회, 같은 사유 2연속 반려 시 멈추고 나에게 에스컬레이션해.
 ```
-→ 처음에는 **reviewer만** 쓰고, 루프가 안정되면 orchestrator를 추가하는 것을 권장 (`docs/멀티에이전트_오케스트레이션_지침.md` 9장).
+→ orchestrator는 **계획을 반환**하고, 실제 루프(Worker 진행·reviewer 호출·상태 추적)는 메인 에이전트가 돈다. 처음에는 **reviewer만** 쓰고, 루프가 안정되면 orchestrator 플래너를 추가하는 것을 권장 (`docs/multi-agent-orchestration.md` 9장).
 
 ### 3.3 모호함 처리 모드 지정
 
@@ -159,7 +161,7 @@ cp -r <이 repo>/cursor/.cursor .cursor
 - **병렬에 적합**: 서로 독립된 조사·분석·파일 탐색 (예: A 모듈 분석 + B 모듈 분석)
 - **병렬에 부적합**: 이전 결과에 의존하는 작업, 같은 파일을 동시에 수정하는 작업
 - **reviewer는 완료 후**: 병렬 Worker가 각자 산출물을 제출한 뒤, 통합·검증 단계에서 reviewer를 호출한다. 병렬 진행 중간에 reviewer를 돌리지 않는다.
-- **3-에이전트 루프**: orchestrator + Worker + reviewer 전체 루프를 쓸 때는 orchestrator가 분해·상태 추적·라우팅을 담당한다. orchestrator는 산출물을 직접 만들지 않는다.
+- **3-에이전트 루프**: orchestrator + Worker + reviewer 전체 루프를 쓸 때, orchestrator 플래너는 분해·라우팅 **계획**을 반환하고, 실제 상태 추적·라우팅·서브에이전트 호출은 **메인 에이전트**가 수행한다. orchestrator는 산출물을 직접 만들지 않는다.
 
 ## 6. 운영·보수
 
@@ -175,4 +177,4 @@ cp -r <이 repo>/cursor/.cursor .cursor
 - Rule은 행동 패턴을 교정하지만 모델의 판단 능력 자체를 올리지는 못한다. 사용하는 모델 성능에 따라 준수 품질이 달라진다.
 - 되돌리기 어려운 작업(DB 변경, 외부 전달물)은 rule·reviewer와 무관하게 사람이 최종 확인한다.
 - reviewer와 작성자가 같은 모델이면 맹점을 공유할 수 있다. 통과된 산출물도 주기적으로 사람이 샘플 검수하고, 오판 사례를 `reviewer.md` 체크리스트에 반영한다.
-- 멀티에이전트(작업자/승인자/오케스트레이터 분리) 구조의 전체 오케스트레이션 규약은 `docs/멀티에이전트_오케스트레이션_지침.md`를 참조한다. Cursor 버전에는 Worker 규율(worker-conduct.mdc), 승인자(reviewer.md), 오케스트레이터(orchestrator.md)가 반영되어 있다.
+- 멀티에이전트(작업자/승인자/오케스트레이터 분리) 구조의 전체 오케스트레이션 규약은 `docs/multi-agent-orchestration.md`를 참조한다. Cursor 버전에는 Worker 규율(worker-conduct.mdc), 승인자(reviewer.md), 오케스트레이터(orchestrator.md)가 반영되어 있다.
