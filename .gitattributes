@@ -1,0 +1,3 @@
+# SSOT diff 검증 시 줄바꿈 노이즈 방지 (Windows CRLF → LF 정규화)
+*.md text eol=lf
+*.mdc text eol=lf

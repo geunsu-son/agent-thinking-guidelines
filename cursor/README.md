@@ -21,7 +21,8 @@ cursor/
 │   ├── agents/
 │   │   ├── orchestrator.md         # 루프 계획 플래너 서브에이전트 (산출물·직접 호출 금지)
 │   │   └── reviewer.md             # 산출물 검증 서브에이전트 (별도 컨텍스트)
-│   └── memory/                     # 세션 간 교훈 축적
+│   ├── memory/                     # 세션 간 교훈 축적
+│   └── state/                      # 루프 상태표 영속화
 └── README.md
 ```
 
@@ -34,6 +35,7 @@ cursor/
 | orchestrator (서브에이전트) | 명시 호출 | 작업 분해·위험등급·라우팅 **계획**을 메인 에이전트에 반환 (실제 라우팅·상태추적은 메인 에이전트) |
 | reviewer (서브에이전트) | description 매칭 / 명시 호출 | 산출물 승인·검증 (작성자와 별도 컨텍스트) |
 | memory/ | 수동 참조 | 프로젝트별 교훈 파일 (한 교훈 = 한 파일) |
+| state/ | 수동 참조 | 3-에이전트 루프 상태표 (`loop-status.md` 런타임 생성) |
 
 **Claude Code 버전과의 차이**: Cursor도 서브에이전트(`.cursor/agents/`)와 Skills(`.cursor/skills/`)를 지원한다. Rules는 항상 적용, Skills는 상황별 프로토콜, Subagent는 orchestrator·reviewer 역할 분리. 서브에이전트 도구 제한은 `readonly` 필드(`tools:` 화이트리스트 대신). reviewer가 부담스러운 일상 작업에서는 worker-conduct rule의 자체 검토·자기신고만으로도 동작한다.
 
@@ -56,6 +58,7 @@ cp -r <이 repo>/cursor/.cursor .cursor
   - reviewer: `/reviewer …` 또는 "reviewer 서브에이전트로 검증해줘"
   - orchestrator: `/orchestrator …` 또는 "orchestrator로 작업 분해해줘"
 - memory: `.cursor/memory/` 디렉터리가 존재하면 정상. 세션 시작 시 훑고, 종료 전 교훈을 파일로 남긴다.
+- state: `.cursor/state/` 디렉터리가 존재하면 정상. 3-에이전트 루프 시 `loop-status.md`를 생성·갱신한다 (`loop-status.example.md` 참고).
 
 ---
 
@@ -132,7 +135,7 @@ cp -r <이 repo>/cursor/.cursor .cursor
 그 계획을 내가 승인하면, 메인 에이전트가 계획대로 Worker를 진행시키고 각 단계 산출물은 reviewer로 검증해.
 반려는 최대 3회, 같은 사유 2연속 반려 시 멈추고 나에게 에스컬레이션해.
 ```
-→ orchestrator는 **계획을 반환**하고, 실제 루프(Worker 진행·reviewer 호출·상태 추적)는 메인 에이전트가 돈다. 처음에는 **reviewer만** 쓰고, 루프가 안정되면 orchestrator 플래너를 추가하는 것을 권장 (`docs/multi-agent-orchestration.md` 9장).
+→ orchestrator는 **계획을 반환**하고, 실제 루프(Worker 진행·reviewer 호출·상태 추적)는 메인 에이전트가 돈다. 반려 횟수·작업 상태는 `.cursor/state/loop-status.md`에 기록하고 **매 판정 후 갱신**한다 (상세: `.cursor/state/README.md`). 처음에는 **reviewer만** 쓰고, 루프가 안정되면 orchestrator 플래너를 추가하는 것을 권장 (`docs/multi-agent-orchestration.md` 9장).
 
 ### 3.3 모호함 처리 모드 지정
 
@@ -167,7 +170,7 @@ cp -r <이 repo>/cursor/.cursor .cursor
 
 이 rule 세트는 한 번 만들고 끝나는 게 아니라 사용하며 보정하는 문서다.
 
-1. **어긴 항목은 예시로 승격**: 에이전트가 자주 어기는 규칙이 보이면, 그 사례를 나쁨/좋음 대비 예시로 해당 rule의 "판단 예시" 섹션에 추가한다. 규칙 서술보다 대비 예시가 준수율을 가장 많이 올린다.
+1. **어긴 항목은 예시로 승격**: 에이전트가 자주 어기는 규칙이 보이면, 그 사례를 나쁨/좋음 대비 예시로 해당 rule의 "판단 예시" 섹션에 추가한다. 규칙 서술보다 대비 예시가 준수율을 가장 많이 올린다. 추가 위치: 항상 적용 → `core-principles.mdc`, 상황 한정(분석·설계) → 해당 skill.
 2. **핵심 위반은 alwaysApply로 승격**: 상황별 rule(analysis/design)의 항목인데 반복적으로 어긴다면 core-principles로 옮긴다.
 3. **rule은 짧게 유지**: rule이 길수록 준수율이 떨어진다. 항목을 추가할 때마다 덜 중요한 항목을 빼는 것을 함께 고려한다.
 4. **원본 문서와 동기화**: 기준 변경은 `docs/`의 원본에 먼저 반영하고 rule로 내려보낸다. 원본이 단일 진실 공급원(SSOT).
