@@ -18,8 +18,8 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 ```
 .
 ├── docs/                                  # 원본 지침 (SSOT — 모든 수정은 여기 먼저)
-│   ├── 에이전트_사고행동_지침.md
-│   └── 멀티에이전트_오케스트레이션_지침.md
+│   ├── agent-thinking-guidelines.md
+│   └── multi-agent-orchestration.md
 ├── cursor/                                # Cursor 버전
 │   ├── .cursor/rules/                     #   4개 rule (.mdc)
 │   ├── .cursor/skills/                    #   상황별 프로토콜 (analysis / design)
@@ -41,12 +41,12 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 | 매핑 | Rules (.mdc) + Skills + Subagent | CLAUDE.md + Skills + Subagent |
 | 상황별 적용 | globs + description + Skill 트리거 | Skill description 자동 트리거 |
 | **검증자 분리** | **가능 — reviewer 서브에이전트 (`.cursor/agents/`)** | **가능 — reviewer 서브에이전트 (`.claude/agents/`)** |
-| **루프 관리** | **가능 — orchestrator 서브에이전트 (`.cursor/agents/`)** | **가능 — orchestrator 서브에이전트 (`.claude/agents/`)** |
+| **루프 계획** | **orchestrator 플래너 서브에이전트 (`.cursor/agents/`)** | **orchestrator 플래너 서브에이전트 (`.claude/agents/`)** |
 | **세션 간 기억** | `.cursor/memory/` | `.claude/memory/` |
 | 검증 루프 | 작성→검증→수정→재검증 루프 가능 | 작성→검증→수정→재검증 루프 가능 |
 | 세부 차이 | 서브에이전트 도구 제한은 `readonly` 필드 | `tools:` 화이트리스트로 도구 세분 지정 |
 
-두 버전 모두 서브에이전트(orchestrator, reviewer)를 지원하므로 **3-에이전트 루프**(오케스트레이터·Worker·승인자 분리)와 **검증자 분리**(작성자와 별도 컨텍스트에서 산출물만 판정)가 가능하다. 남는 차이는 매핑 형식과 서브에이전트 세부 설정 필드 정도이며, 어느 쪽을 쓰든 검증 루프의 효과는 동일하다.
+두 버전 모두 reviewer 서브에이전트로 **검증자 분리**(작성자와 별도 컨텍스트에서 산출물만 판정)를 지원한다. **3-에이전트 루프**(오케스트레이터·Worker·승인자)에서 **실제로 루프를 도는 주체는 메인 에이전트**다: 메인 에이전트가 오케스트레이터 역할을 맡아 Worker를 진행시키고 reviewer 서브에이전트로 검증한다. orchestrator 서브에이전트는 이 루프를 대신 돌리는 게 아니라, **작업 분해·위험 등급·라우팅 계획을 메인 에이전트에 반환하는 플래너**로 쓴다. (서브에이전트가 다른 서브에이전트를 직접 호출하는 것은 플랫폼·버전에 따라 불안정하거나 불가능하므로 의존하지 않는다.)
 
 ## 빠른 시작
 
@@ -133,6 +133,89 @@ Claude Code 버전만 사용해. `claude/` 아래 내용을 이 프로젝트에 
 
 설치 후 작업 지시(프롬프트 템플릿)는 각 버전 README 참조 — [cursor/README.md](cursor/README.md), [claude/README.md](claude/README.md). **3-에이전트 루프** 통합 템플릿도 포함되어 있다.
 
+### 업데이트 (버전 반영)
+
+upstream repo가 갱신되면, 설치 때와 같이 **명령어** 또는 **AI 채팅**으로 반영한다. 원칙은 동일하다: 지침 파일은 upstream 기준으로 맞추되, **프로젝트 전용 내용은 보존**한다.
+
+**보존 (덮어쓰지 않음)**
+- `.cursor/memory/`, `.claude/memory/` 안의 **프로젝트 교훈 파일** (upstream에 없는 파일)
+- 팀이 직접 추가한 rule·skill·agent (upstream 목록에 없는 이름)
+
+**갱신 (upstream과 동기화)**
+- `core-principles`, `worker-conduct`, `analysis-protocol`, `design-protocol` (rule·skill)
+- `orchestrator`, `reviewer` (agent)
+- `memory/README.md` (규약만 — 교훈 본문은 유지)
+
+#### 명령어로 업데이트
+
+```bash
+# 최신 upstream 가져오기
+git clone https://github.com/geunsu-son/agent-thinking-guidelines.git /tmp/agent-thinking-guidelines
+# 이미 clone 해 두었다면: cd /tmp/agent-thinking-guidelines && git pull
+
+# Cursor — 파일 단위로 덮어쓰기 (memory/ 교훈 파일은 제외하고 직접 확인)
+cp /tmp/agent-thinking-guidelines/cursor/.cursor/rules/*.mdc <your-project>/.cursor/rules/
+cp -r /tmp/agent-thinking-guidelines/cursor/.cursor/skills/* <your-project>/.cursor/skills/
+cp /tmp/agent-thinking-guidelines/cursor/.cursor/agents/*.md <your-project>/.cursor/agents/
+cp /tmp/agent-thinking-guidelines/cursor/.cursor/memory/README.md <your-project>/.cursor/memory/
+
+# Claude Code — CLAUDE.md는 diff 확인 후 수동 병합 권장
+diff <your-project>/CLAUDE.md /tmp/agent-thinking-guidelines/claude/CLAUDE.md
+cp -r /tmp/agent-thinking-guidelines/claude/skills/* <your-project>/.claude/skills/
+cp /tmp/agent-thinking-guidelines/claude/agents/*.md <your-project>/.claude/agents/
+cp /tmp/agent-thinking-guidelines/claude/.claude/memory/README.md <your-project>/.claude/memory/
+```
+
+#### AI 채팅으로 업데이트 (권장)
+
+**Cursor** — Agent 채팅에 붙여넣기:
+
+```
+이 프로젝트의 Agent Thinking Guidelines를 최신 upstream으로 업데이트해줘.
+
+소스: https://github.com/geunsu-son/agent-thinking-guidelines (최신 master 기준)
+Cursor 버전만 대상으로 해.
+
+작업 순서:
+1. repo를 임시로 clone하거나 pull해서 최신 `cursor/.cursor/`를 확인해
+2. 이 프로젝트의 `.cursor/`와 upstream을 파일별로 비교해
+3. 변경 요약을 먼저 보여줘 (추가·수정·삭제된 upstream 파일)
+4. 반영 규칙:
+   - upstream에 있는 rules/, skills/, agents/ → 내용을 upstream 기준으로 갱신
+   - `.cursor/memory/`의 프로젝트 교훈 파일(upstream에 없는 .md) → 건드리지 않음
+   - `memory/README.md`만 upstream 규약으로 갱신
+   - 이 프로젝트에만 있는 rule·skill·agent → 유지
+   - 같은 이름 파일인데 우리가 커스텀했을 수 있으면 diff를 보여주고 내 확인 후 반영
+5. 완료 후: 갱신된 파일 목록, 보존한 파일 목록, Settings → Rules 확인 방법을 보고해
+```
+
+**Claude Code** — 채팅에 붙여넣기:
+
+```
+이 프로젝트의 Agent Thinking Guidelines를 최신 upstream으로 업데이트해줘.
+
+소스: https://github.com/geunsu-son/agent-thinking-guidelines (최신 master 기준)
+Claude Code 버전만 대상으로 해.
+
+작업 순서:
+1. repo를 임시로 clone하거나 pull해서 최신 `claude/`를 확인해
+2. 이 프로젝트의 CLAUDE.md, `.claude/skills`, `agents`, `memory`와 upstream을 비교해
+3. 변경 요약을 먼저 보여줘
+4. 반영 규칙:
+   - `skills/`, `agents/` → upstream 기준으로 갱신
+   - `CLAUDE.md` → 덮어쓰지 말고 upstream 변경분만 병합 (핵심 원칙·작업 규율·금지 행동)
+   - `.claude/memory/`의 프로젝트 교훈 파일 → 건드리지 않음
+   - `memory/README.md`만 upstream 규약으로 갱신
+   - 이 프로젝트에만 있는 skill·agent → 유지
+5. 개인 전역(`~/.claude/`)은 수정하지 말 것
+6. 완료 후: 갱신·보존 파일 목록, `/memory`, `/agents` 확인 방법을 보고해
+```
+
+| 도구 | 버전 확인 프롬프트 |
+|---|---|
+| Cursor | `agent-thinking-guidelines upstream과 이 프로젝트 .cursor/를 비교해줘. 빠지거나 오래된 지침 파일만 골라 업데이트안을 보여줘.` |
+| Claude Code | `agent-thinking-guidelines upstream과 이 프로젝트 CLAUDE.md·.claude/를 비교해줘. 빠지거나 오래된 지침만 골라 업데이트안을 보여줘.` |
+
 ## 요구 사항
 
 - **Cursor**: 서브에이전트(`.cursor/agents/`) 사용 시 **Cursor 2.4+** ([Subagents 문서](https://cursor.com/docs/agent/subagents))
@@ -146,8 +229,8 @@ Claude Code 버전만 사용해. `claude/` 아래 내용을 이 프로젝트에 
 |---|---|---|
 | 핵심 원칙·금지 행동 | `cursor/.cursor/rules/core-principles.mdc` | `claude/CLAUDE.md` |
 | 작업 규율·진행 보고 | `cursor/.cursor/rules/worker-conduct.mdc` | `claude/CLAUDE.md` |
-| 분석 프로토콜 | `cursor/.cursor/rules/analysis-protocol.mdc`, `cursor/.cursor/skills/analysis-protocol/SKILL.md` | `claude/skills/analysis-protocol/SKILL.md` |
-| 설계 프로토콜 | `cursor/.cursor/rules/design-protocol.mdc`, `cursor/.cursor/skills/design-protocol/SKILL.md` | `claude/skills/design-protocol/SKILL.md` |
+| 분석 프로토콜 | `cursor/.cursor/skills/analysis-protocol/SKILL.md` (rule `.mdc`는 트리거 포인터 — 내용 수정 불필요) | `claude/skills/analysis-protocol/SKILL.md` |
+| 설계 프로토콜 | `cursor/.cursor/skills/design-protocol/SKILL.md` (rule `.mdc`는 트리거 포인터 — 내용 수정 불필요) | `claude/skills/design-protocol/SKILL.md` |
 | 오케스트레이터 | `cursor/.cursor/agents/orchestrator.md` | `claude/agents/orchestrator.md` |
 | 승인자 | `cursor/.cursor/agents/reviewer.md` | `claude/agents/reviewer.md` |
 | 메모리 규약 | `cursor/.cursor/memory/README.md` | `claude/.claude/memory/README.md` |

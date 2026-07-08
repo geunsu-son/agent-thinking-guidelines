@@ -10,4 +10,4 @@
 - 기수별 집계 전 reg_dt NULL 비율과 최소/최대 날짜를 로그로 남긴다.
 
 ## SSOT와의 관계
-`docs/에이전트_사고행동_지침.md` 1.2(모호함 처리)의 판단 예시와 동일 주제. 충돌 시 SSOT가 우선.
+`docs/agent-thinking-guidelines.md` 1.2(모호함 처리)의 판단 예시와 동일 주제. 충돌 시 SSOT가 우선.
