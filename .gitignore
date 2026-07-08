@@ -15,3 +15,11 @@ desktop.ini
 # claude/.claude/memory/*.md
 !cursor/.cursor/memory/README.md
 !claude/.claude/memory/README.md
+
+# Runtime loop state (generated per project session)
+cursor/.cursor/state/loop-status.md
+claude/.claude/state/loop-status.md
+!cursor/.cursor/state/README.md
+!claude/.claude/state/README.md
+!cursor/.cursor/state/loop-status.example.md
+!claude/.claude/state/loop-status.example.md
