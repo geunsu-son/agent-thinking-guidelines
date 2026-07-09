@@ -83,21 +83,25 @@ sequenceDiagram
 
 repo는 Cursor·Claude Code 두 버전으로 매핑되어 있으며, 역할 구조는 동일하다.
 
-| 계층 | Cursor | Claude Code | 적용 |
+| 계층 | Cursor | Claude Code | 적용 (기본 = 옵트인) |
 |---|---|---|---|
-| **기본 원칙** | `core-principles.mdc` | `CLAUDE.md` | 항상 |
-| **작업 규율** | `worker-conduct.mdc` | `CLAUDE.md` | 항상 |
-| **상황별 프로토콜** | `skills/analysis-protocol`, `skills/design-protocol` | 동일 경로 | 작업 유형에 따라 |
+| **기본 원칙** | `core-principles.mdc` | `CLAUDE.always.md` (스텁은 `CLAUDE.md`) | `@docs/agent-thinking-guidelines.md` 또는 항상 적용 전환 후 |
+| **작업 규율** | `worker-conduct.mdc` | 위와 동일 | 동일 |
+| **상황별 프로토콜** | `skills/analysis-protocol`, `skills/design-protocol` | 동일 경로 | 해당 작업·명시 호출 시 |
 | **플래너** | `agents/orchestrator.md` | `agents/orchestrator.md` | `/orchestrator` |
 | **승인자** | `agents/reviewer.md` | `agents/reviewer.md` | `/reviewer` |
 | **세션 간 기억** | `.cursor/memory/` | `.claude/memory/` | 수동 참조 |
 | **루프 상태** | `.cursor/state/loop-status.md` | `.claude/state/loop-status.md` | 루프 실행 시 |
 
+기본 설치는 **호출 시에만** 지침을 켠다(토큰 절약). 설치 완료 시 에이전트가 호출법을 안내하고 **"항상 적용되도록 적용할까요?"** 를 묻는다.
+
 | 모드 | 구성 | 적합한 작업 |
 |---|---|---|
-| **단순** | 기본 원칙 + 메인 에이전트 | 일상 코드 수정, 소규모 분석 |
-| **검증** | + reviewer | 수치 보고, 되돌리기 어려운 변경 |
-| **풀 루프** | + orchestrator + state | 대규모 리팩터링, 다단계 설계 |
+| **일상 (옵트인 끔)** | 메인 에이전트만 | 가벼운 질문·소규모 수정 |
+| **지침 켜기** | `@docs/…` + 메인 | 설계·분석·규율이 필요한 작업 |
+| **검증** | + `/reviewer` | 수치 보고, 되돌리기 어려운 변경 |
+| **풀 루프** | + `/orchestrator` + state | 대규모 리팩터링, 다단계 설계 |
+| **항상 적용** | Cursor `alwaysApply: true` / Claude `CLAUDE.always.md`→`CLAUDE.md` | 토큰 비용을 감수하고 매 세션 자동 적용 |
 
 도입은 단계적으로 권장한다: **(1)** 메인 + reviewer → **(2)** 체크리스트 보정 → **(3)** orchestrator 추가. 처음부터 3-에이전트를 완전 자동으로 켜면 어느 층에서 문제가 생겼는지 진단하기 어렵다. ([`multi-agent-orchestration.md` 9장](multi-agent-orchestration.md#9-도입-순서-권장))
 
