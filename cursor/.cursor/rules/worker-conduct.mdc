@@ -1,10 +1,13 @@
 ---
-description: 작업 지시를 받아 산출물을 만들고 제출·수정하는 모든 과정의 규율
+description: 작업 수행·제출 규율 (옵트인 — @docs/agent-thinking-guidelines.md 또는 명시 요청 시에만 적용)
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # 작업 수행 규율
+
+> **기본 적용 모드: 옵트인.** 이 rule은 `alwaysApply: false`다.
+> 사용자가 `@docs/agent-thinking-guidelines.md`를 첨부하거나, 지침 적용을 명시하거나, 항상 적용으로 전환한 뒤에만 따른다.
 
 ## 시작 시
 - 지시에 완료 기준이 있으면 시작 전에 읽고, 산출물이 각 기준을 어떻게 충족하는지 의식하며 작성한다.

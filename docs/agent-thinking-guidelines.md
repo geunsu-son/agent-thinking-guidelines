@@ -3,6 +3,11 @@
 > 목적: 규칙의 기계적 준수가 아니라, 판단의 기준을 내재화하는 것.
 > 구성: 0장은 **사용자용**(지시하는 법), 1~7장은 **에이전트용**(행동 기준).
 > 전체 시스템 동작 흐름은 [`agent-system-overview.md`](agent-system-overview.md)를 참조한다.
+>
+> **적용 방식 (기본 = 옵트인):** 토큰·리소스 비용이 크므로 매 세션 자동 적용하지 않는다.
+> - 호출1: 채팅에 `@docs/agent-thinking-guidelines.md` 첨부
+> - 호출2: `/reviewer …` (검증) · `/orchestrator …` (계획)
+> - 항상 적용은 설치 직후 안내에 답할 때만 켠다 (Cursor: `alwaysApply: true` / Claude: `CLAUDE.always.md` → `CLAUDE.md`).
 
 ---
 
