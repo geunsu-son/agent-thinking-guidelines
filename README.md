@@ -56,7 +56,7 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 | | Cursor 버전 | Claude Code 버전 |
 |---|---|---|
 | 매핑 | Rules (.mdc) + Skills + Subagent | CLAUDE.md + Skills + Subagent |
-| **기본 적용** | **옵트인** (`alwaysApply: false`) — `@docs/…` / `/reviewer` 등으로 호출 | **옵트인** (스텁 CLAUDE.md) — 동일 호출법. 항상 적용 시 `CLAUDE.always.md` 반영 |
+| **기본 적용** | **옵트인** (`alwaysApply: false`) — `/agent-thinking-guidelines` 등으로 호출 | **옵트인** (스텁 CLAUDE.md) — 동일 호출법. 항상 적용 시 `CLAUDE.always.md` 반영 |
 | 상황별 적용 | description/globs + Skill (호출·해당 작업 시) | Skill description (해당 작업 시) |
 | **검증자 분리** | **가능 — reviewer 서브에이전트 (`.cursor/agents/`)** | **가능 — reviewer 서브에이전트 (`.claude/agents/`)** |
 | **루프 계획** | **orchestrator 플래너 서브에이전트 (`.cursor/agents/`)** | **orchestrator 플래너 서브에이전트 (`.claude/agents/`)** |
@@ -179,7 +179,7 @@ Claude Code 버전만 사용해. `claude/` 아래 내용을 이 프로젝트에 
 
 ### 업데이트 (버전 반영)
 
-upstream repo가 갱신되면, 설치 때와 같이 **명령어** 또는 **AI 채팅**으로 반영한다. 원칙은 동일하다: 지침 파일은 upstream 기준으로 맞추되, **프로젝트 전용 내용은 보존**한다.
+upstream repo가 갱신되면, **대상 프로젝트를 연 AI 채팅**에 아래 프롬프트를 붙여넣어 반영한다. 원칙은 설치와 동일하다: 지침 파일은 upstream 기준으로 맞추되, **프로젝트 전용 내용은 보존**한다.
 
 **보존 (덮어쓰지 않음)**
 - `.cursor/memory/`, `.claude/memory/` 안의 **프로젝트 교훈 파일** (upstream에 없는 파일)
@@ -191,37 +191,6 @@ upstream repo가 갱신되면, 설치 때와 같이 **명령어** 또는 **AI �
 - `orchestrator`, `reviewer` (agent)
 - `memory/README.md` (규약만 — 교훈 본문은 유지)
 - `state/README.md`, `state/loop-status.example.md` (규약·형식만 — 런타임 `loop-status.md`는 유지)
-
-#### 명령어로 업데이트
-
-```bash
-# 최신 upstream 가져오기
-git clone https://github.com/geunsu-son/agent-thinking-guidelines.git /tmp/agent-thinking-guidelines
-# 이미 clone 해 두었다면: cd /tmp/agent-thinking-guidelines && git pull
-
-# docs SSOT
-cp /tmp/agent-thinking-guidelines/docs/agent-thinking-guidelines.md <your-project>/docs/
-
-# Cursor — 파일 단위로 덮어쓰기 (memory/ 교훈 파일은 제외하고 직접 확인)
-# alwaysApply를 프로젝트에서 true로 바꿔 둔 경우, 덮어쓴 뒤 다시 true로 맞출지 확인
-cp /tmp/agent-thinking-guidelines/cursor/.cursor/rules/*.mdc <your-project>/.cursor/rules/
-cp -r /tmp/agent-thinking-guidelines/cursor/.cursor/skills/* <your-project>/.cursor/skills/
-cp /tmp/agent-thinking-guidelines/cursor/.cursor/agents/*.md <your-project>/.cursor/agents/
-cp /tmp/agent-thinking-guidelines/cursor/.cursor/memory/README.md <your-project>/.cursor/memory/
-cp /tmp/agent-thinking-guidelines/cursor/.cursor/state/README.md <your-project>/.cursor/state/
-cp /tmp/agent-thinking-guidelines/cursor/.cursor/state/loop-status.example.md <your-project>/.cursor/state/
-
-# Claude Code — CLAUDE.md는 옵트인 스텁 vs 항상적용 여부를 diff로 확인 후 병합
-diff <your-project>/CLAUDE.md /tmp/agent-thinking-guidelines/claude/CLAUDE.md
-cp /tmp/agent-thinking-guidelines/claude/CLAUDE.always.md <your-project>/CLAUDE.always.md
-cp -r /tmp/agent-thinking-guidelines/claude/skills/* <your-project>/.claude/skills/
-cp /tmp/agent-thinking-guidelines/claude/agents/*.md <your-project>/.claude/agents/
-cp /tmp/agent-thinking-guidelines/claude/.claude/memory/README.md <your-project>/.claude/memory/
-cp /tmp/agent-thinking-guidelines/claude/.claude/state/README.md <your-project>/.claude/state/
-cp /tmp/agent-thinking-guidelines/claude/.claude/state/loop-status.example.md <your-project>/.claude/state/
-```
-
-#### AI 채팅으로 업데이트 (권장)
 
 **Cursor** — Agent 채팅에 붙여넣기:
 
@@ -237,7 +206,7 @@ Cursor 버전만 대상으로 해.
 3. 변경 요약을 먼저 보여줘 (추가·수정·삭제된 upstream 파일)
 4. 반영 규칙:
    - `docs/agent-thinking-guidelines.md` → upstream 기준으로 갱신
-   - upstream에 있는 rules/, skills/, agents/ → 내용을 upstream 기준으로 갱신
+   - upstream에 있는 rules/, skills/(agent-thinking-guidelines 포함), agents/ → 내용을 upstream 기준으로 갱신
    - 단, 이 프로젝트에서 alwaysApply를 true로 바꿔 둔 rule은 내용 갱신 후 alwaysApply 설정을 유지할지 확인
    - `.cursor/memory/`의 프로젝트 교훈 파일(upstream에 없는 .md) → 건드리지 않음
    - `memory/README.md`만 upstream 규약으로 갱신
@@ -245,7 +214,10 @@ Cursor 버전만 대상으로 해.
    - `state/README.md`, `state/loop-status.example.md`만 upstream 규약으로 갱신
    - 이 프로젝트에만 있는 rule·skill·agent → 유지
    - 같은 이름 파일인데 우리가 커스텀했을 수 있으면 diff를 보여주고 내 확인 후 반영
-5. 완료 후: 갱신·보존 파일 목록을 보고하고, 호출법(@docs/…, /reviewer, /orchestrator)을 다시 안내한 뒤 "항상 적용되도록 적용할까요?"를 물어.
+5. 완료 후: 갱신·보존 파일 목록을 보고하고, 아래 호출법을 **그대로** 안내한 뒤 "항상 적용되도록 적용할까요?"를 물어.
+   - 호출 방법1: /agent-thinking-guidelines (권장)
+   - 호출 방법2: @docs/agent-thinking-guidelines.md (Desktop 등)
+   - 호출 방법3: /reviewer … (검증), /orchestrator … (계획)
    - 예 → core-principles·worker-conduct의 alwaysApply를 true로
    - 아니오 → 옵트인(false) 유지. 사용자가 이미 항상 적용 중이면 그 설정을 유지할지 확인
 ```
@@ -264,7 +236,7 @@ Claude Code 버전만 대상으로 해.
 3. 변경 요약을 먼저 보여줘
 4. 반영 규칙:
    - `docs/agent-thinking-guidelines.md` → upstream 기준으로 갱신
-   - `skills/`, `agents/` → upstream 기준으로 갱신
+   - `skills/`(agent-thinking-guidelines 포함), `agents/` → upstream 기준으로 갱신
    - `CLAUDE.always.md` → upstream 기준으로 갱신
    - `CLAUDE.md` → 현재가 옵트인 스텁이면 스텁을 upstream 기준으로 갱신. 이미 항상 적용(전문)이면 덮어쓰지 말고 CLAUDE.always.md 변경분만 병합할지 확인
    - `.claude/memory/`의 프로젝트 교훈 파일 → 건드리지 않음
@@ -273,12 +245,15 @@ Claude Code 버전만 대상으로 해.
    - `state/README.md`, `state/loop-status.example.md`만 upstream 규약으로 갱신
    - 이 프로젝트에만 있는 skill·agent → 유지
 5. 개인 전역(`~/.claude/`)은 수정하지 말 것
-6. 완료 후: 갱신·보존 파일 목록을 보고하고, 호출법(@docs/…, /reviewer, /orchestrator)을 다시 안내한 뒤 "항상 적용되도록 적용할까요?"를 물어.
+6. 완료 후: 갱신·보존 파일 목록을 보고하고, 아래 호출법을 **그대로** 안내한 뒤 "항상 적용되도록 적용할까요?"를 물어.
+   - 호출 방법1: /agent-thinking-guidelines (권장)
+   - 호출 방법2: @docs/agent-thinking-guidelines.md (Desktop 등)
+   - 호출 방법3: /reviewer … (검증), /orchestrator … (계획)
    - 예 → CLAUDE.always.md를 CLAUDE.md에 반영
    - 아니오 → 옵트인 유지
 ```
 
-| 도구 | 버전 확인 프롬프트 |
+| 도구 | 변경만 미리 보기 (반영 전 확인용) |
 |---|---|
 | Cursor | `agent-thinking-guidelines upstream과 이 프로젝트 .cursor/를 비교해줘. 빠지거나 오래된 지침 파일만 골라 업데이트안을 보여줘.` |
 | Claude Code | `agent-thinking-guidelines upstream과 이 프로젝트 CLAUDE.md·.claude/를 비교해줘. 빠지거나 오래된 지침만 골라 업데이트안을 보여줘.` |
