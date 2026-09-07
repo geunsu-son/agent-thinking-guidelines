@@ -2,7 +2,7 @@
 
 에이전트 지침을 Claude Code의 세 가지 메커니즘으로 매핑한 버전.
 
-**기본 적용 모드: 옵트인.** `CLAUDE.md`는 호출법 안내 스텁만 로드하고, 전문 원칙은 호출 시(`@docs/…`) 또는 사용자가 항상 적용을 선택한 뒤에만 켠다.
+**기본 적용 모드: 옵트인.** `CLAUDE.md`는 호출법 안내 스텁만 로드하고, 전문 원칙은 호출 시(`/agent-thinking-guidelines` 또는 `@docs/…`) 또는 사용자가 항상 적용을 선택한 뒤에만 켠다.
 
 ## 구성 및 매핑
 
@@ -10,6 +10,7 @@
 |---|---|---|
 | `CLAUDE.md` | 메모리 (항상 로드되는 스텁) | 옵트인 안내·호출법·항상적용 전환 절차 |
 | `CLAUDE.always.md` | (선택) 항상 적용용 전문 | 사용자가 "예" 시 `CLAUDE.md`에 반영 |
+| `skills/agent-thinking-guidelines/` | Skill (명시 호출) | 기본 지침 적용 (docs/ 1~7장 읽기) |
 | `skills/analysis-protocol/` | Skill (상황별) | 데이터 분석 검증 프로토콜 |
 | `skills/design-protocol/` | Skill (상황별) | 설계·구조 변경 프로토콜 |
 | `agents/orchestrator.md` | 서브에이전트 | 루프 **계획** 반환 (플래너 — 산출물·직접 호출 금지) |
@@ -19,8 +20,9 @@
 
 ### 호출 방법 (기본)
 
-1. **`@docs/agent-thinking-guidelines.md`** — 전문 지침을 첨부해 해당 작업에 적용
-2. **`/reviewer …`** — 산출물 검증 (필요 시 `/orchestrator …` 로 계획)
+1. **`/agent-thinking-guidelines`** — 지침 적용 (권장)
+2. **`@docs/agent-thinking-guidelines.md`** — 파일 첨부가 편한 환경에서 동일 효과
+3. **`/reviewer …`** — 산출물 검증 (필요 시 `/orchestrator …` 로 계획)
 
 **핵심 이점 — 검증자 분리**: reviewer 서브에이전트는 작성자(메인 에이전트)의 추론 과정을 보지 않고 산출물만 판정하므로, 자기 결과물에 관대해지는 편향이 구조적으로 차단된다. orchestrator는 **분해·위험등급·라우팅 계획을 메인 에이전트에 반환하는 플래너**이며, 실제 Worker·reviewer 호출과 상태 추적은 메인 에이전트가 수행한다.
 
@@ -34,7 +36,7 @@
 ```bash
 # 대상 프로젝트 루트에서
 mkdir -p docs
-cp <이 repo>/docs/agent-thinking-guidelines.md docs/   # @docs/ 호출용 SSOT
+cp <이 repo>/docs/agent-thinking-guidelines.md docs/   # SSOT (스킬이 Read로 참조)
 cp <이 repo>/claude/CLAUDE.md ./CLAUDE.md              # 옵트인 스텁 (이미 있으면 병합)
 cp <이 repo>/claude/CLAUDE.always.md ./CLAUDE.always.md
 mkdir -p .claude
@@ -61,9 +63,10 @@ cp -r <이 repo>/claude/agents/* ~/.claude/agents/
 설치 완료. 기본 모드는 호출 시에만 지침을 씁니다 (토큰 절약).
 
 호출 방법:
-1. @docs/agent-thinking-guidelines.md
-2. /reviewer …  (검증)
-3. /orchestrator …  (계획)
+1. /agent-thinking-guidelines  (권장)
+2. @docs/agent-thinking-guidelines.md  (Desktop 등)
+3. /reviewer …  (검증)
+4. /orchestrator …  (계획)
 
 항상 적용되도록 적용할까요?
 (예: CLAUDE.always.md를 CLAUDE.md에 반영 / 아니오: 옵트인 스텁 유지)
@@ -75,7 +78,7 @@ cp -r <이 repo>/claude/agents/* ~/.claude/agents/
 ```
 [목적] 왜 필요한지
 [작업] 무엇을 해달라는지 한 문장
-[입력] 참고 파일·데이터 경로 (+ 필요 시 @docs/agent-thinking-guidelines.md)
+[입력] 참고 파일·데이터 경로 (+ 필요 시 /agent-thinking-guidelines 또는 @docs/agent-thinking-guidelines.md)
 [제약] 형식·범위·제외할 것
 ```
 
@@ -83,9 +86,10 @@ cp -r <이 repo>/claude/agents/* ~/.claude/agents/
 
 **① 데이터 분석 + 검증**
 ```
+/agent-thinking-guidelines
+
 [목적] 이번 주 팀 회의 공유용
 [작업] data/sales_2025Q2.csv 에서 채널별 매출 추이와 Q1 대비 변화 분석
-[입력] @docs/agent-thinking-guidelines.md
 [제약] pandas, 결과는 markdown 표
 
 완료되면 reviewer 서브에이전트로 검증받고, 판정표와 함께 결과를 제출해.
@@ -95,9 +99,10 @@ cp -r <이 repo>/claude/agents/* ~/.claude/agents/
 
 **② 설계 작업 (체크포인트 방식)**
 ```
+/agent-thinking-guidelines
+
 [목적] 사용자 역할 기능 추가 대응
 [작업] role_permissions 테이블 설계
-[입력] @docs/agent-thinking-guidelines.md
 [제약] 기존 users.role 값 변경 불가
 
 바로 구현하지 말고, 설계 구조(변경 테이블 / 마이그레이션 순서 / 영향 코드)만
@@ -123,9 +128,10 @@ cp -r <이 repo>/claude/agents/* ~/.claude/agents/
 
 **⑤ 3-에이전트 루프 (orchestrator + Worker + reviewer)**
 ```
+/agent-thinking-guidelines
+
 [목적] 대규모 리팩터링을 단계별로 안전하게 진행
 [작업] src/ 의 구 API 호출을 신규 API로 마이그레이션
-[입력] @docs/agent-thinking-guidelines.md
 [제약] 테스트 파일 제외, 되돌리기 어려운 DB 변경 없음
 
 orchestrator 서브에이전트로 이 작업의 분해·위험 등급(하/중/상)·라우팅 계획을 만들어줘.
@@ -161,7 +167,7 @@ orchestrator 서브에이전트로 이 작업의 분해·위험 등급(하/중/�
 - **3-에이전트 루프**: 실제 상태 추적·라우팅·서브에이전트 호출은 **메인 에이전트**가 수행. orchestrator는 산출물을 직접 만들지 않는다.
 
 ## 알려진 한계
-- 옵트인 모드에서는 `@docs/…` 또는 `/reviewer`를 빼먹으면 전문 지침이 적용되지 않는다.
+- 옵트인 모드에서는 `/agent-thinking-guidelines` 또는 `@docs/…`를 빼먹으면 전문 지침이 적용되지 않는다.
 - reviewer와 작성자가 같은 모델이면 맹점을 공유할 수 있다. 통과된 산출물도 주기적으로 사람이 샘플 검수할 것.
 - Claude Code reviewer는 `tools` 화이트리스트로 Bash를 허용하므로, Cursor의 `readonly`처럼 구조적으로 수정을 차단하지는 않는다. "직접 수정하지 않는다"는 행동 지침에 의존한다.
 - CLAUDE.md(항상 적용 전문)가 길수록 준수율이 떨어진다. 기본은 스텁을 유지하는 편이 토큰·준수 모두에 유리하다.

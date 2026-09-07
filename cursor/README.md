@@ -18,6 +18,7 @@ cursor/
 │   │   ├── analysis-protocol.mdc   # 데이터 분석 시 트리거 (전문은 skill, 포인터)
 │   │   └── design-protocol.mdc     # 설계 작업 시 트리거 (전문은 skill, 포인터)
 │   ├── skills/
+│   │   ├── agent-thinking-guidelines/ # 기본 지침 Skill (호출 진입점 → docs/ SSOT)
 │   │   ├── analysis-protocol/      # 분석 Skill (Claude Code와 동일 내용)
 │   │   └── design-protocol/        # 설계 Skill
 │   ├── agents/
@@ -30,6 +31,7 @@ cursor/
 
 | 구성 | 적용 방식 | 역할 |
 |---|---|---|
+| agent-thinking-guidelines | 명시 호출 `/agent-thinking-guidelines` | 기본 지침 적용 (docs/ 1~7장 읽기) |
 | core-principles | `alwaysApply: false` (옵트인) | 모호함 처리, 불확실성 표기, 자체 검토, 금지 행동 |
 | worker-conduct | `alwaysApply: false` (옵트인) | 가정 자기신고, 수정 범위 준수, 체크포인트, 진행 보고 검증 |
 | analysis-protocol | globs 트리거(.mdc) → 전문은 Skill | 샘플 검증 → 전체 확장, 행 수 추적, 역산 검증 |
@@ -41,8 +43,9 @@ cursor/
 
 ### 호출 방법 (기본)
 
-1. **`@docs/agent-thinking-guidelines.md`** — 전문 지침을 첨부해 해당 작업에 적용
-2. **`/reviewer …`** — 산출물 검증 (필요 시 `/orchestrator …` 로 계획)
+1. **`/agent-thinking-guidelines`** — 지침 적용 (권장. Cursor·Cloud Agent 공통)
+2. **`@docs/agent-thinking-guidelines.md`** — Desktop 등 파일 첨부가 편한 환경에서 동일 효과
+3. **`/reviewer …`** — 산출물 검증 (필요 시 `/orchestrator …` 로 계획)
 
 항상 적용이 필요하면 설치 완료 안내에서 **"항상 적용되도록 적용할까요?"** 에 `예` → `core-principles.mdc`·`worker-conduct.mdc`의 `alwaysApply`를 `true`로 바꾼다.
 
@@ -59,13 +62,13 @@ cursor/
 ```bash
 # 대상 프로젝트 루트에서
 mkdir -p docs
-cp <이 repo>/docs/agent-thinking-guidelines.md docs/   # @docs/ 호출용 SSOT
+cp <이 repo>/docs/agent-thinking-guidelines.md docs/   # SSOT (스킬이 Read로 참조)
 cp -r <이 repo>/cursor/.cursor .cursor
 ```
 
 **적용 확인**:
 - `Settings → Rules`에 4개 rule이 보이면 정상. 기본은 alwaysApply=false라서, 채팅에 rule이 자동으로 붙지 않는 것이 정상이다.
-- `@docs/agent-thinking-guidelines.md` 첨부 또는 `/reviewer` 호출로 지침·검증을 켠다.
+- `/agent-thinking-guidelines` 또는 `@docs/agent-thinking-guidelines.md`로 지침을 켠다. `/reviewer`로 검증한다.
 - 서브에이전트는 `.cursor/agents/*.md`로 자동 인식된다.
   - reviewer: `/reviewer …` 또는 "reviewer 서브에이전트로 검증해줘"
   - orchestrator: `/orchestrator …` 또는 "orchestrator로 작업 분해해줘"
@@ -80,9 +83,10 @@ cp -r <이 repo>/cursor/.cursor .cursor
 설치 완료. 기본 모드는 호출 시에만 지침을 씁니다 (토큰 절약).
 
 호출 방법:
-1. @docs/agent-thinking-guidelines.md
-2. /reviewer …  (검증)
-3. /orchestrator …  (계획)
+1. /agent-thinking-guidelines  (권장)
+2. @docs/agent-thinking-guidelines.md  (Desktop 등)
+3. /reviewer …  (검증)
+4. /orchestrator …  (계획)
 
 항상 적용되도록 적용할까요?
 (예: core-principles·worker-conduct의 alwaysApply를 true / 아니오: 옵트인 유지)
@@ -101,15 +105,16 @@ cp -r <이 repo>/cursor/.cursor .cursor
 [제약] 형식·범위·제외할 것
 ```
 
-옵트인 모드에서는 지침이 필요할 때 `[입력]`에 `@docs/agent-thinking-guidelines.md`를 함께 첨부한다.
+옵트인 모드에서는 지침이 필요할 때 프롬프트 맨 앞에 `/agent-thinking-guidelines`를 붙이거나, `[입력]`에 `@docs/agent-thinking-guidelines.md`를 첨부한다.
 
 ### 3.2 복사해서 쓰는 프롬프트 템플릿
 
 **① 데이터 분석 작업**
 ```
+/agent-thinking-guidelines
+
 [목적] 이번 주 팀 회의 공유용
 [작업] @sales_2025Q2.csv 에서 채널별 매출 추이와 Q1 대비 변화를 분석해줘
-[입력] @docs/agent-thinking-guidelines.md
 [제약] pandas 사용, 결과는 markdown 표
 
 먼저 데이터의 행 수·컬럼 구조·결측 현황을 보고하고,
@@ -120,9 +125,10 @@ cp -r <이 repo>/cursor/.cursor .cursor
 
 **② 설계 작업**
 ```
+/agent-thinking-guidelines
+
 [목적] 사용자 역할 기능 추가 대응
 [작업] @schema.sql 기준으로 role_permissions 테이블 설계
-[입력] @docs/agent-thinking-guidelines.md
 [제약] 기존 users.role 값은 변경 불가
 
 바로 구현하지 말고, 먼저 설계 구조(변경 대상 테이블 / 마이그레이션 순서 /
@@ -159,9 +165,10 @@ cp -r <이 repo>/cursor/.cursor .cursor
 
 **⑥ 3-에이전트 루프 (orchestrator + Worker + reviewer)**
 ```
+/agent-thinking-guidelines
+
 [목적] 대규모 리팩터링을 단계별로 안전하게 진행
 [작업] @src/ 의 구 API 호출을 신규 API로 마이그레이션
-[입력] @docs/agent-thinking-guidelines.md
 [제약] 테스트 파일 제외, 되돌리기 어려운 DB 변경 없음
 
 /orchestrator 이 작업의 분해·위험 등급(하/중/상)·라우팅 계획을 만들어줘.
@@ -211,7 +218,7 @@ cp -r <이 repo>/cursor/.cursor .cursor
 ## 7. 알려진 한계
 
 - Rule은 행동 패턴을 교정하지만 모델의 판단 능력 자체를 올리지는 못한다. 사용하는 모델 성능에 따라 준수 품질이 달라진다.
-- 옵트인 모드에서는 `@docs/…` 또는 `/reviewer`를 빼먹으면 지침이 적용되지 않는다.
+- 옵트인 모드에서는 `/agent-thinking-guidelines` 또는 `@docs/…`를 빼먹으면 지침이 적용되지 않는다.
 - 되돌리기 어려운 작업(DB 변경, 외부 전달물)은 rule·reviewer와 무관하게 사람이 최종 확인한다.
 - reviewer와 작성자가 같은 모델이면 맹점을 공유할 수 있다. 통과된 산출물도 주기적으로 사람이 샘플 검수하고, 오판 사례를 `reviewer.md` 체크리스트에 반영한다.
 - 멀티에이전트(작업자/승인자/오케스트레이터 분리) 구조의 전체 오케스트레이션 규약은 `docs/multi-agent-orchestration.md`를 참조한다. Cursor 버전에는 Worker 규율(worker-conduct.mdc), 승인자(reviewer.md), 오케스트레이터(orchestrator.md)가 반영되어 있다.

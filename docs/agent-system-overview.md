@@ -85,7 +85,7 @@ repo는 Cursor·Claude Code 두 버전으로 매핑되어 있으며, 역할 구�
 
 | 계층 | Cursor | Claude Code | 적용 (기본 = 옵트인) |
 |---|---|---|---|
-| **기본 원칙** | `core-principles.mdc` | `CLAUDE.always.md` (스텁은 `CLAUDE.md`) | `@docs/agent-thinking-guidelines.md` 또는 항상 적용 전환 후 |
+| **기본 원칙** | `skills/agent-thinking-guidelines` + `core-principles.mdc` | `skills/agent-thinking-guidelines` + `CLAUDE.always.md` (스텁은 `CLAUDE.md`) | `/agent-thinking-guidelines` 또는 `@docs/agent-thinking-guidelines.md` 또는 항상 적용 전환 후 |
 | **작업 규율** | `worker-conduct.mdc` | 위와 동일 | 동일 |
 | **상황별 프로토콜** | `skills/analysis-protocol`, `skills/design-protocol` | 동일 경로 | 해당 작업·명시 호출 시 |
 | **플래너** | `agents/orchestrator.md` | `agents/orchestrator.md` | `/orchestrator` |

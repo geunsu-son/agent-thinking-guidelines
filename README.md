@@ -9,9 +9,10 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 
 | 호출 방법 | 예시 | 효과 |
 |---|---|---|
-| **1. 전문 지침 첨부** | `@docs/agent-thinking-guidelines.md` | 해당 턴(및 첨부된 동안) 핵심 원칙·규율 적용 |
-| **2. 검증 서브에이전트** | `/reviewer …` | 산출물 품질 검증 (별도 컨텍스트) |
-| **3. 계획 서브에이전트** | `/orchestrator …` | 작업 분해·위험 등급·라우팅 계획 |
+| **1. 지침 스킬 (권장)** | `/agent-thinking-guidelines` | 해당 작업에 핵심 원칙·규율 적용 (Cursor·Cloud Agent·Claude Code 공통) |
+| **2. 전문 지침 첨부** | `@docs/agent-thinking-guidelines.md` | Desktop 등 파일 첨부가 편한 환경에서 동일 효과 |
+| **3. 검증 서브에이전트** | `/reviewer …` | 산출물 품질 검증 (별도 컨텍스트) |
+| **4. 계획 서브에이전트** | `/orchestrator …` | 작업 분해·위험 등급·라우팅 계획 |
 
 설치·업데이트가 끝나면 에이전트가 위 호출법을 안내한 뒤, **"항상 적용되도록 적용할까요?"** 를 묻는다. `예`면 Cursor는 `alwaysApply: true`로, Claude Code는 `CLAUDE.always.md` 내용을 `CLAUDE.md`에 반영한다.
 
@@ -35,7 +36,7 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 │   └── agent-system-overview.md           #   구현된 에이전트 동작 흐름 설명
 ├── cursor/                                # Cursor 버전
 │   ├── .cursor/rules/                     #   4개 rule (.mdc)
-│   ├── .cursor/skills/                    #   상황별 프로토콜 (analysis / design)
+│   ├── .cursor/skills/                    #   기본 지침 + 상황별 프로토콜
 │   ├── .cursor/agents/                    #   orchestrator + reviewer 서브에이전트
 │   ├── .cursor/memory/                    #   세션 간 교훈 축적
 │   ├── .cursor/state/                     #   루프 상태표 영속화
@@ -43,7 +44,7 @@ AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하
 └── claude/                                # Claude Code 버전
     ├── CLAUDE.md                          #   옵트인 스텁 (호출법·항상적용 전환 안내)
     ├── CLAUDE.always.md                   #   항상 적용 선택 시 병합할 전문
-    ├── skills/                            #   상황별 프로토콜 (analysis / design)
+    ├── skills/                            #   기본 지침 + 상황별 프로토콜
     ├── agents/                            #   orchestrator + reviewer 서브에이전트
     ├── .claude/memory/                    #   세션 간 교훈 축적
     ├── .claude/state/                     #   루프 상태표 영속화
@@ -119,14 +120,15 @@ Cursor 버전만 사용해. `cursor/.cursor/` 아래 내용을 이 프로젝트 
    - 같은 이름의 rule·skill·agent가 있으면 차이를 요약하고 내 확인 후 처리해
 4. 복사 대상:
    - rules/ (core-principles, worker-conduct, analysis-protocol, design-protocol) — alwaysApply는 upstream 그대로(기본 false)
-   - skills/ (analysis-protocol, design-protocol)
+   - skills/ (agent-thinking-guidelines, analysis-protocol, design-protocol)
    - agents/ (orchestrator, reviewer)
    - memory/ (README 및 예시)
    - state/ (README 및 loop-status.example — 런타임 loop-status.md는 생성만, 복사 안 함)
 5. 파일 반영이 끝나면 설치 요약을 짧게 보고한 뒤, 아래를 **그대로** 안내하고 마지막 질문을 반드시 해:
    - 기본 모드는 호출 시에만 지침을 씀 (토큰 절약)
-   - 호출 방법1: @docs/agent-thinking-guidelines.md
-   - 호출 방법2: /reviewer … (검증), /orchestrator … (계획)
+   - 호출 방법1: /agent-thinking-guidelines (권장)
+   - 호출 방법2: @docs/agent-thinking-guidelines.md (Desktop 등)
+   - 호출 방법3: /reviewer … (검증), /orchestrator … (계획)
    - 질문: "항상 적용되도록 적용할까요?"
    - 사용자가 예라고 하면 core-principles.mdc·worker-conduct.mdc의 alwaysApply를 true로 바꾸고 확인 보고
    - 아니오(또는 미응답)면 옵트인 유지
@@ -156,8 +158,9 @@ Claude Code 버전만 사용해. `claude/` 아래 내용을 이 프로젝트에 
 4. 개인 전역(`~/.claude/`)에는 설치하지 말고, 이 프로젝트에만 적용해
 5. 파일 반영이 끝나면 설치 요약을 짧게 보고한 뒤, 아래를 **그대로** 안내하고 마지막 질문을 반드시 해:
    - 기본 모드는 호출 시에만 지침을 씀 (토큰 절약)
-   - 호출 방법1: @docs/agent-thinking-guidelines.md
-   - 호출 방법2: /reviewer … (검증), /orchestrator … (계획)
+   - 호출 방법1: /agent-thinking-guidelines (권장)
+   - 호출 방법2: @docs/agent-thinking-guidelines.md (Desktop 등)
+   - 호출 방법3: /reviewer … (검증), /orchestrator … (계획)
    - 질문: "항상 적용되도록 적용할까요?"
    - 사용자가 예라고 하면 CLAUDE.always.md 내용을 CLAUDE.md에 반영(교체 또는 병합)하고 확인 보고
    - 아니오(또는 미응답)면 옵트인 스텁 유지
@@ -184,7 +187,7 @@ upstream repo가 갱신되면, 설치 때와 같이 **명령어** 또는 **AI �
 - 팀이 직접 추가한 rule·skill·agent (upstream 목록에 없는 이름)
 
 **갱신 (upstream과 동기화)**
-- `core-principles`, `worker-conduct`, `analysis-protocol`, `design-protocol` (rule·skill)
+- `core-principles`, `worker-conduct`, `agent-thinking-guidelines`, `analysis-protocol`, `design-protocol` (rule·skill)
 - `orchestrator`, `reviewer` (agent)
 - `memory/README.md` (규약만 — 교훈 본문은 유지)
 - `state/README.md`, `state/loop-status.example.md` (규약·형식만 — 런타임 `loop-status.md`는 유지)
@@ -293,7 +296,7 @@ Claude Code 버전만 대상으로 해.
 |---|---|---|
 | 핵심 원칙·금지 행동 | `cursor/.cursor/rules/core-principles.mdc` | `claude/CLAUDE.always.md` (+ 항상 적용 시 `CLAUDE.md`) |
 | 작업 규율·진행 보고 | `cursor/.cursor/rules/worker-conduct.mdc` | `claude/CLAUDE.always.md` (+ 항상 적용 시 `CLAUDE.md`) |
-| 옵트인 안내·호출법 | (rule frontmatter `alwaysApply: false`) | `claude/CLAUDE.md` (스텁) |
+| 옵트인 안내·호출법 | `cursor/.cursor/skills/agent-thinking-guidelines/SKILL.md` (rule frontmatter `alwaysApply: false`) | `claude/skills/agent-thinking-guidelines/SKILL.md` (+ `CLAUDE.md` 스텁) |
 | 분석 프로토콜 | `cursor/.cursor/skills/analysis-protocol/SKILL.md` (rule `.mdc`는 트리거 포인터 — 내용 수정 불필요) | `claude/skills/analysis-protocol/SKILL.md` |
 | 설계 프로토콜 | `cursor/.cursor/skills/design-protocol/SKILL.md` (rule `.mdc`는 트리거 포인터 — 내용 수정 불필요) | `claude/skills/design-protocol/SKILL.md` |
 | 오케스트레이터 | `cursor/.cursor/agents/orchestrator.md` | `claude/agents/orchestrator.md` |

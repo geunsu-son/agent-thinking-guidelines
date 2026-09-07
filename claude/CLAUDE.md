@@ -7,9 +7,10 @@
 
 ## 호출 방법
 
-1. **전문 지침 첨부**: `@docs/agent-thinking-guidelines.md` 를 채팅에 첨부한 뒤 작업 지시
-2. **검증 서브에이전트**: `/reviewer …` (또는 "reviewer로 검증해줘")
-3. **계획 서브에이전트**: `/orchestrator …` (또는 "orchestrator로 작업 분해해줘")
+1. **지침 스킬 (권장)**: `/agent-thinking-guidelines` 로 기본 지침 적용
+2. **전문 지침 첨부**: `@docs/agent-thinking-guidelines.md` 를 채팅에 첨부한 뒤 작업 지시 (Desktop 등)
+3. **검증 서브에이전트**: `/reviewer …` (또는 "reviewer로 검증해줘")
+4. **계획 서브에이전트**: `/orchestrator …` (또는 "orchestrator로 작업 분해해줘")
 
 상황별 프로토콜(분석·설계)은 `skills/`에 있으며, 해당 작업을 **명시적으로** 요청하거나 skill을 호출할 때 사용한다.
 
@@ -29,9 +30,10 @@
 설치 완료. 기본 모드는 호출 시에만 지침을 씁니다 (토큰 절약).
 
 호출 방법:
-1. @docs/agent-thinking-guidelines.md
-2. /reviewer …  (검증)
-3. /orchestrator …  (계획)
+1. /agent-thinking-guidelines  (권장)
+2. @docs/agent-thinking-guidelines.md  (Desktop 등)
+3. /reviewer …  (검증)
+4. /orchestrator …  (계획)
 
 항상 적용되도록 적용할까요?
 (예: core 원칙을 매 세션 자동 로드 / 아니오: 지금처럼 호출할 때만)
