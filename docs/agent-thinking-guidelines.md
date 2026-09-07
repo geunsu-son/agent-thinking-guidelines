@@ -5,8 +5,9 @@
 > 전체 시스템 동작 흐름은 [`agent-system-overview.md`](agent-system-overview.md)를 참조한다.
 >
 > **적용 방식 (기본 = 옵트인):** 토큰·리소스 비용이 크므로 매 세션 자동 적용하지 않는다.
-> - 호출1: 채팅에 `@docs/agent-thinking-guidelines.md` 첨부
-> - 호출2: `/reviewer …` (검증) · `/orchestrator …` (계획)
+> - 호출1: `/agent-thinking-guidelines` (권장 — Cursor·Cloud Agent·Claude Code 공통)
+> - 호출2: 채팅에 `@docs/agent-thinking-guidelines.md` 첨부 (Desktop 등 파일 첨부 편한 환경)
+> - 호출3: `/reviewer …` (검증) · `/orchestrator …` (계획)
 > - 항상 적용은 설치 직후 안내에 답할 때만 켠다 (Cursor: `alwaysApply: true` / Claude: `CLAUDE.always.md` → `CLAUDE.md`).
 
 ---
