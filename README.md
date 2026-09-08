@@ -1,3 +1,13 @@
+[!NOTE]
+이 저장소는 아카이브되었습니다.
+
+Agent Thinking Guidelines는 agent_skill_bundle로 통합되었으며, 앞으로의 관리와 업데이트는 아래 저장소에서 진행됩니다.
+
+현재 관리되는 버전:
+https://github.com/geunsu-son/agent_skill_bundle/tree/main/bundles/agent-thinking-guidelines
+
+---
+
 # Agent Thinking Guidelines
 
 AI 에이전트가 설계·분석 작업을 정확하고 깊이 있게 수행하도록 만드는 지침 세트.
