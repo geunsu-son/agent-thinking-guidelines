@@ -1,5 +1,4 @@
-[!NOTE]
-이 저장소는 아카이브되었습니다.
+⚠️ 이 저장소는 아카이브되었습니다.
 
 Agent Thinking Guidelines는 agent_skill_bundle로 통합되었으며, 앞으로의 관리와 업데이트는 아래 저장소에서 진행됩니다.
 
